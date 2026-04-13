@@ -203,12 +203,16 @@ class SCM_Rules {
 
             case 'taxonomy_term':
                 // target_value format: "taxonomy:term-slug"
+                // Built-in taxonomies (category, tag) do NOT set is_tax in WP;
+                // they use is_category() / is_tag() respectively.
+                if ( ! $ctx->is_tax && ! $ctx->is_category && ! $ctx->is_tag ) {
+                    return false;
+                }
                 $parts = explode( ':', $rule['target_value'], 2 );
                 if ( 2 !== count( $parts ) || '' === $parts[0] || '' === $parts[1] ) {
                     return false;
                 }
-                return $ctx->is_tax
-                    && $ctx->taxonomy  === $parts[0]
+                return $ctx->taxonomy  === $parts[0]
                     && $ctx->term_slug === $parts[1];
 
             case 'exact_url':

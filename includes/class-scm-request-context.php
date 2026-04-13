@@ -114,11 +114,17 @@ class SCM_Request_Context {
         $ctx->is_category = (bool) is_category();
         if ( $ctx->is_category && is_object( $queried ) && isset( $queried->slug ) ) {
             $ctx->category_slug = (string) $queried->slug;
+            // Populate taxonomy/term_slug so taxonomy_term rules can match category pages.
+            $ctx->taxonomy  = 'category';
+            $ctx->term_slug = (string) $queried->slug;
         }
 
         $ctx->is_tag = (bool) is_tag();
         if ( $ctx->is_tag && is_object( $queried ) && isset( $queried->slug ) ) {
             $ctx->tag_slug = (string) $queried->slug;
+            // Populate taxonomy/term_slug so taxonomy_term rules can match tag pages.
+            $ctx->taxonomy  = 'post_tag';
+            $ctx->term_slug = (string) $queried->slug;
         }
 
         $ctx->is_tax = (bool) is_tax();

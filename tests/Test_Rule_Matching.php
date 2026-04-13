@@ -299,9 +299,26 @@ class Test_Rule_Matching extends TestCase {
     }
 
     public function test_taxonomy_term_does_not_match_without_is_tax(): void {
+        // All three flags false → no taxonomy context at all → must not match.
         $rules = $this->make_rules();
-        $ctx   = SCM_Request_Context::from_array( array( 'is_tax' => false, 'taxonomy' => 'genre', 'term_slug' => 'fiction' ) );
+        $ctx   = SCM_Request_Context::from_array( array( 'is_tax' => false, 'is_category' => false, 'is_tag' => false, 'taxonomy' => 'genre', 'term_slug' => 'fiction' ) );
         $this->assertFalse( $rules->matches_context( $this->make_match_rule( 'taxonomy_term', 'genre:fiction' ), $ctx ) );
+    }
+
+    /** Regression: taxonomy_term must match built-in category pages (is_tax is false for categories). */
+    public function test_taxonomy_term_matches_builtin_category_via_is_category(): void {
+        $rules = $this->make_rules();
+        // WP category pages: is_category=true, is_tax=false; context sets taxonomy='category', term_slug=slug.
+        $ctx   = SCM_Request_Context::from_array( array( 'is_category' => true, 'is_tax' => false, 'taxonomy' => 'category', 'term_slug' => 'noticias' ) );
+        $this->assertTrue( $rules->matches_context( $this->make_match_rule( 'taxonomy_term', 'category:noticias' ), $ctx ) );
+    }
+
+    /** Regression: taxonomy_term must match built-in tag pages (is_tax is false for tags). */
+    public function test_taxonomy_term_matches_builtin_tag_via_is_tag(): void {
+        $rules = $this->make_rules();
+        // WP tag pages: is_tag=true, is_tax=false; context sets taxonomy='post_tag', term_slug=slug.
+        $ctx   = SCM_Request_Context::from_array( array( 'is_tag' => true, 'is_tax' => false, 'taxonomy' => 'post_tag', 'term_slug' => 'php' ) );
+        $this->assertTrue( $rules->matches_context( $this->make_match_rule( 'taxonomy_term', 'post_tag:php' ), $ctx ) );
     }
 
     public function test_taxonomy_term_malformed_value_never_matches(): void {
