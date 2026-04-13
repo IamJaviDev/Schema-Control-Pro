@@ -78,7 +78,7 @@ class Test_Export extends TestCase {
         $ie      = $this->make_ie( [ make_rule_row( 1 ) ], [ 1 => [ make_schema_row( 10, 1 ) ] ] );
         $payload = $ie->export_all();
 
-        $this->assertSame( 'schema-control-manager', $payload['plugin'] );
+        $this->assertSame( 'schema-control-pro', $payload['plugin'] );
         $this->assertSame( SCM_VERSION, $payload['version'] );
         $this->assertArrayHasKey( 'exported_at', $payload );
         $this->assertIsArray( $payload['rules'] );
@@ -138,7 +138,7 @@ class Test_Export extends TestCase {
         $ie      = $this->make_ie( [ make_rule_row( 7 ) ], [] );
         $payload = $this->capture_export_rule( $ie, 7 );
 
-        $this->assertSame( 'schema-control-manager', $payload['plugin'] );
+        $this->assertSame( 'schema-control-pro', $payload['plugin'] );
         $this->assertSame( SCM_VERSION, $payload['version'] );
         $this->assertArrayHasKey( 'exported_at', $payload );
     }

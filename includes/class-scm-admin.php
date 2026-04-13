@@ -25,11 +25,11 @@ class SCM_Admin {
     }
 
     public function register_menu() {
-        add_menu_page( __( 'Schema Manager', 'schema-control-manager' ), __( 'Schema Manager', 'schema-control-manager' ), 'manage_options', 'scm_rules', array( $this, 'render_rules_page' ), 'dashicons-media-code', 81 );
-        add_submenu_page( 'scm_rules', __( 'Rules', 'schema-control-manager' ), __( 'Rules', 'schema-control-manager' ), 'manage_options', 'scm_rules', array( $this, 'render_rules_page' ) );
-        add_submenu_page( 'scm_rules', __( 'Add Rule', 'schema-control-manager' ), __( 'Add Rule', 'schema-control-manager' ), 'manage_options', 'scm_rule_edit', array( $this, 'render_rule_edit_page' ) );
-        add_submenu_page( 'scm_rules', __( 'Import / Export', 'schema-control-manager' ), __( 'Import / Export', 'schema-control-manager' ), 'manage_options', 'scm_import_export', array( $this, 'render_import_export_page' ) );
-        add_submenu_page( 'scm_rules', __( 'Settings', 'schema-control-manager' ), __( 'Settings', 'schema-control-manager' ), 'manage_options', 'scm_settings', array( $this, 'render_settings_page' ) );
+        add_menu_page( __( 'Schema Manager', 'schema-control-pro' ), __( 'Schema Manager', 'schema-control-pro' ), 'manage_options', 'scm_rules', array( $this, 'render_rules_page' ), 'dashicons-media-code', 81 );
+        add_submenu_page( 'scm_rules', __( 'Rules', 'schema-control-pro' ), __( 'Rules', 'schema-control-pro' ), 'manage_options', 'scm_rules', array( $this, 'render_rules_page' ) );
+        add_submenu_page( 'scm_rules', __( 'Add Rule', 'schema-control-pro' ), __( 'Add Rule', 'schema-control-pro' ), 'manage_options', 'scm_rule_edit', array( $this, 'render_rule_edit_page' ) );
+        add_submenu_page( 'scm_rules', __( 'Import / Export', 'schema-control-pro' ), __( 'Import / Export', 'schema-control-pro' ), 'manage_options', 'scm_import_export', array( $this, 'render_import_export_page' ) );
+        add_submenu_page( 'scm_rules', __( 'Settings', 'schema-control-pro' ), __( 'Settings', 'schema-control-pro' ), 'manage_options', 'scm_settings', array( $this, 'render_settings_page' ) );
     }
 
     public function enqueue_assets( $hook ) {
@@ -123,7 +123,7 @@ class SCM_Admin {
                 $dangerous     = array_intersect( array( 'webpage', 'website', 'profilepage' ), $blocked_types );
                 $danger_notice = ! empty( $dangerous )
                     ? sprintf(
-                        ' ' . __( 'Types %s are especially dangerous as they overwrite AIOSEO\'s page structure.', 'schema-control-manager' ),
+                        ' ' . __( 'Types %s are especially dangerous as they overwrite AIOSEO\'s page structure.', 'schema-control-pro' ),
                         implode( ', ', array_map( 'ucfirst', $dangerous ) )
                     )
                     : '';
@@ -131,7 +131,7 @@ class SCM_Admin {
                     'unsafe_structural_addition',
                     sprintf(
                         /* translators: 1: list of blocked types, 2: optional danger notice */
-                        __( 'AIOSEO + Custom is intended for additive types (FAQPage, HowTo, Service…). Structural types detected: %1$s.%2$s Use "Override selected types" mode instead.', 'schema-control-manager' ),
+                        __( 'AIOSEO + Custom is intended for additive types (FAQPage, HowTo, Service…). Structural types detected: %1$s.%2$s Use "Override selected types" mode instead.', 'schema-control-pro' ),
                         implode( ', ', $blocked_types ),
                         $danger_notice
                     )
@@ -370,7 +370,7 @@ class SCM_Admin {
         if ( $rule_id <= 0 ) {
             return new WP_Error(
                 'missing_rule_id',
-                __( 'No rule context provided. A schema must be saved under a specific rule.', 'schema-control-manager' )
+                __( 'No rule context provided. A schema must be saved under a specific rule.', 'schema-control-pro' )
             );
         }
 
@@ -379,7 +379,7 @@ class SCM_Admin {
                 'rule_not_found',
                 sprintf(
                     /* translators: %d: rule ID */
-                    __( 'Rule #%d does not exist. The schema cannot be saved.', 'schema-control-manager' ),
+                    __( 'Rule #%d does not exist. The schema cannot be saved.', 'schema-control-pro' ),
                     $rule_id
                 )
             );
@@ -391,7 +391,7 @@ class SCM_Admin {
                     'schema_not_found',
                     sprintf(
                         /* translators: %d: schema ID */
-                        __( 'Schema #%d does not exist. It may have been deleted.', 'schema-control-manager' ),
+                        __( 'Schema #%d does not exist. It may have been deleted.', 'schema-control-pro' ),
                         $schema_id
                     )
                 );
@@ -402,7 +402,7 @@ class SCM_Admin {
                     'schema_rule_mismatch',
                     sprintf(
                         /* translators: 1: schema ID, 2: actual rule ID, 3: expected rule ID */
-                        __( 'Schema #%1$d belongs to Rule #%2$d, not Rule #%3$d. Saving is blocked to prevent data corruption.', 'schema-control-manager' ),
+                        __( 'Schema #%1$d belongs to Rule #%2$d, not Rule #%3$d. Saving is blocked to prevent data corruption.', 'schema-control-pro' ),
                         $schema_id,
                         (int) $existing_schema['rule_id'],
                         $rule_id
@@ -414,7 +414,7 @@ class SCM_Admin {
         if ( '' === trim( $schema_json ) ) {
             return new WP_Error(
                 'empty_schema_json',
-                __( 'The schema JSON payload is empty. Nothing was saved.', 'schema-control-manager' )
+                __( 'The schema JSON payload is empty. Nothing was saved.', 'schema-control-pro' )
             );
         }
 
@@ -434,15 +434,15 @@ class SCM_Admin {
     private function build_rule_summary( $rule, $schemas ) {
         $mode          = $rule['mode'];
         $aioseo_status = 'aioseo_only' === $mode
-            ? __( 'Active only', 'schema-control-manager' )
-            : ( 'custom_only' === $mode ? __( 'Disabled', 'schema-control-manager' ) : __( 'Active', 'schema-control-manager' ) );
+            ? __( 'Active only', 'schema-control-pro' )
+            : ( 'custom_only' === $mode ? __( 'Disabled', 'schema-control-pro' ) : __( 'Active', 'schema-control-pro' ) );
         $output        = 'aioseo_only' === $mode
-            ? __( 'Only AIOSEO output', 'schema-control-manager' )
+            ? __( 'Only AIOSEO output', 'schema-control-pro' )
             : ( 'custom_only' === $mode
-                ? __( 'Only custom output', 'schema-control-manager' )
+                ? __( 'Only custom output', 'schema-control-pro' )
                 : ( 'custom_override_selected' === $mode
-                    ? __( 'AIOSEO filtered + custom', 'schema-control-manager' )
-                    : __( 'AIOSEO + custom merge', 'schema-control-manager' )
+                    ? __( 'AIOSEO filtered + custom', 'schema-control-pro' )
+                    : __( 'AIOSEO + custom merge', 'schema-control-pro' )
                 )
             );
 

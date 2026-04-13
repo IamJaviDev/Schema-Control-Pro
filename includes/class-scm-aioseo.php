@@ -89,11 +89,11 @@ class SCM_AIOSEO {
             // likely cause from context so the admin message is actionable.
             $mode = $rule['mode'] ?? '';
             if ( 'custom_only' === $mode ) {
-                $errors[] = __( 'Graph is empty (Custom Only mode): no active schemas produced valid nodes for this rule. Ensure at least one schema is active and contains a valid @type.', 'schema-control-manager' );
+                $errors[] = __( 'Graph is empty (Custom Only mode): no active schemas produced valid nodes for this rule. Ensure at least one schema is active and contains a valid @type.', 'schema-control-pro' );
             } elseif ( ! empty( $original_graphs ) ) {
-                $errors[] = __( 'Graph is empty after merge even though AIOSEO had nodes. Check for @id conflicts or silent normalization failures.', 'schema-control-manager' );
+                $errors[] = __( 'Graph is empty after merge even though AIOSEO had nodes. Check for @id conflicts or silent normalization failures.', 'schema-control-pro' );
             } else {
-                $errors[] = __( 'Graph is empty: neither AIOSEO nor the custom schemas produced any valid nodes for this rule.', 'schema-control-manager' );
+                $errors[] = __( 'Graph is empty: neither AIOSEO nor the custom schemas produced any valid nodes for this rule.', 'schema-control-pro' );
             }
         }
 

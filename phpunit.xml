@@ -6,7 +6,7 @@
     colors="true"
 >
     <testsuites>
-        <testsuite name="Schema Control Manager">
+        <testsuite name="Schema Control Pro">
             <directory prefix="Test_" suffix=".php">tests</directory>
         </testsuite>
     </testsuites>

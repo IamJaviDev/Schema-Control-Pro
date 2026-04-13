@@ -60,7 +60,7 @@ class SCM_Graph_Manager {
             if ( is_wp_error( $normalized ) ) {
                 $this->last_merge_notices['errors'][] = sprintf(
                     /* translators: 1: schema label, 2: error message */
-                    __( 'Schema "%1$s" failed to normalize: %2$s', 'schema-control-manager' ),
+                    __( 'Schema "%1$s" failed to normalize: %2$s', 'schema-control-pro' ),
                     $schema['label'],
                     $normalized->get_error_message()
                 );
@@ -76,7 +76,7 @@ class SCM_Graph_Manager {
                 if ( null !== $type_error ) {
                     $this->last_merge_notices['errors'][] = sprintf(
                         /* translators: 1: schema label, 2: error message */
-                        __( 'Schema "%1$s" contains an invalid node: %2$s', 'schema-control-manager' ),
+                        __( 'Schema "%1$s" contains an invalid node: %2$s', 'schema-control-pro' ),
                         $schema['label'],
                         $type_error
                     );
@@ -110,7 +110,7 @@ class SCM_Graph_Manager {
         if ( 'custom_only' === $mode ) {
             $result = $this->deduplicate_nodes( $custom_nodes );
             if ( empty( $result ) ) {
-                $this->last_merge_notices['errors'][] = __( 'custom_only mode: graph is empty. No active schemas produced valid nodes.', 'schema-control-manager' );
+                $this->last_merge_notices['errors'][] = __( 'custom_only mode: graph is empty. No active schemas produced valid nodes.', 'schema-control-pro' );
             }
             return $result;
         }
@@ -119,7 +119,7 @@ class SCM_Graph_Manager {
             $custom_nodes = $this->filter_out_structural_nodes( $custom_nodes );
             $result       = $this->deduplicate_nodes( array_merge( $aioseo_graphs, $custom_nodes ) );
             if ( empty( $result ) ) {
-                $this->last_merge_notices['errors'][] = __( 'Graph is empty after merge (AIOSEO + Custom mode). No valid nodes were produced — check for @id conflicts, invalid nodes, or missing active schemas.', 'schema-control-manager' );
+                $this->last_merge_notices['errors'][] = __( 'Graph is empty after merge (AIOSEO + Custom mode). No valid nodes were produced — check for @id conflicts, invalid nodes, or missing active schemas.', 'schema-control-pro' );
             }
             return $result;
         }
@@ -159,7 +159,7 @@ class SCM_Graph_Manager {
         $result = $this->deduplicate_nodes( array_merge( $aioseo_graphs, $custom_nodes ) );
 
         if ( empty( $result ) ) {
-            $this->last_merge_notices['errors'][] = __( 'Graph is empty after merge (Override Selected mode). Check for @id conflicts, all nodes being filtered out, or missing active schemas.', 'schema-control-manager' );
+            $this->last_merge_notices['errors'][] = __( 'Graph is empty after merge (Override Selected mode). Check for @id conflicts, all nodes being filtered out, or missing active schemas.', 'schema-control-pro' );
         }
 
         return $result;
@@ -240,23 +240,23 @@ class SCM_Graph_Manager {
         $changes = array();
         switch ( $mode ) {
             case 'aioseo_only':
-                $changes[] = __( 'Mode: AIOSEO Only — custom schemas are not active for this rule.', 'schema-control-manager' );
+                $changes[] = __( 'Mode: AIOSEO Only — custom schemas are not active for this rule.', 'schema-control-pro' );
                 break;
             case 'aioseo_plus_custom':
-                $changes[] = __( 'Mode: AIOSEO + Custom — custom nodes will be merged with AIOSEO output.', 'schema-control-manager' );
+                $changes[] = __( 'Mode: AIOSEO + Custom — custom nodes will be merged with AIOSEO output.', 'schema-control-pro' );
                 break;
             case 'custom_override_selected':
-                $changes[] = __( 'Mode: Override Selected — selected AIOSEO types will be removed and replaced by custom nodes.', 'schema-control-manager' );
+                $changes[] = __( 'Mode: Override Selected — selected AIOSEO types will be removed and replaced by custom nodes.', 'schema-control-pro' );
                 if ( ! empty( $replaced ) ) {
                     $changes[] = sprintf(
                         /* translators: %s: comma-separated list of schema types */
-                        __( 'Types to be replaced: %s', 'schema-control-manager' ),
+                        __( 'Types to be replaced: %s', 'schema-control-pro' ),
                         implode( ', ', $replaced )
                     );
                 }
                 break;
             case 'custom_only':
-                $changes[] = __( 'Mode: Custom Only — AIOSEO output is disabled; only custom schemas will be injected.', 'schema-control-manager' );
+                $changes[] = __( 'Mode: Custom Only — AIOSEO output is disabled; only custom schemas will be injected.', 'schema-control-pro' );
                 break;
         }
 
@@ -402,13 +402,13 @@ class SCM_Graph_Manager {
                 if ( 0 === count( $new_nodes ) ) {
                     $this->last_merge_notices['errors'][] = sprintf(
                         /* translators: %s: schema type */
-                        __( 'Override of "%s" failed: no custom node of this type was found in the saved schemas. The AIOSEO node was removed but nothing replaced it.', 'schema-control-manager' ),
+                        __( 'Override of "%s" failed: no custom node of this type was found in the saved schemas. The AIOSEO node was removed but nothing replaced it.', 'schema-control-pro' ),
                         $type
                     );
                 } elseif ( count( $new_nodes ) > 1 ) {
                     $this->last_merge_notices['warnings'][] = sprintf(
                         /* translators: %s: schema type */
-                        __( 'Override of "%s": multiple custom nodes of this type found. Skipping automatic @id alignment — ensure the intended node carries the correct @id.', 'schema-control-manager' ),
+                        __( 'Override of "%s": multiple custom nodes of this type found. Skipping automatic @id alignment — ensure the intended node carries the correct @id.', 'schema-control-pro' ),
                         $type
                     );
                 } elseif ( 0 === count( $old_nodes ) ) {
@@ -417,14 +417,14 @@ class SCM_Graph_Manager {
                     // separately via extract_inline_structural_refs().
                     $this->last_merge_notices['warnings'][] = sprintf(
                         /* translators: %s: schema type */
-                        __( 'Override of "%s": no matching top-level AIOSEO node found to replace. The custom node will be inserted with its own @id.', 'schema-control-manager' ),
+                        __( 'Override of "%s": no matching top-level AIOSEO node found to replace. The custom node will be inserted with its own @id.', 'schema-control-pro' ),
                         $type
                     );
                 } else {
                     // count(old) > 1 && count(new) === 1: ambiguous — cannot safely align.
                     $this->last_merge_notices['warnings'][] = sprintf(
                         /* translators: 1: count of removed AIOSEO nodes, 2: schema type */
-                        __( 'Override of "%2$s": %1$d AIOSEO nodes were removed but only 1 custom node was found. Automatic @id alignment was skipped — references to the removed nodes may be broken.', 'schema-control-manager' ),
+                        __( 'Override of "%2$s": %1$d AIOSEO nodes were removed but only 1 custom node was found. Automatic @id alignment was skipped — references to the removed nodes may be broken.', 'schema-control-pro' ),
                         count( $old_nodes ),
                         $type
                     );

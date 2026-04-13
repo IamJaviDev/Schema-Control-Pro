@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name: Schema Control Manager
- * Description: Manage custom JSON-LD schemas by target and control coexistence with AIOSEO.
+ * Plugin Name: Schema Control Pro
+ * Description: Define, prioritize, and inject custom JSON-LD schema rules per page type, taxonomy, or post. Full control over structured data output with AIOSEO coexistence support.
  * Version: 1.5.0
  * Author: Don Javier
- * Text Domain: schema-control-manager
+ * Text Domain: schema-control-pro
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -120,7 +120,7 @@ final class SCM_Plugin {
     }
 
     public function load_textdomain() {
-        load_plugin_textdomain( 'schema-control-manager', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+        load_plugin_textdomain( 'schema-control-pro', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
     }
 
     public static function activate() {

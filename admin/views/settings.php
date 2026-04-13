@@ -1,7 +1,7 @@
 <?php if ( ! defined( 'ABSPATH' ) ) { exit; } ?>
 <div class="wrap scm-wrap">
-    <h1><?php esc_html_e( 'Settings', 'schema-control-manager' ); ?></h1>
-    <?php if ( ! empty( $_GET['updated'] ) ) : ?><div class="notice notice-success"><p><?php esc_html_e( 'Settings saved.', 'schema-control-manager' ); ?></p></div><?php endif; ?>
+    <h1><?php esc_html_e( 'Settings', 'schema-control-pro' ); ?></h1>
+    <?php if ( ! empty( $_GET['updated'] ) ) : ?><div class="notice notice-success"><p><?php esc_html_e( 'Settings saved.', 'schema-control-pro' ); ?></p></div><?php endif; ?>
     <div class="scm-card scm-card-full">
         <form method="post">
             <?php wp_nonce_field( 'scm_save_settings' ); ?>
@@ -15,10 +15,10 @@
                 <tr><th>Enable graph diagnostics</th><td><label><input type="checkbox" name="enable_graph_diagnostics" value="1" <?php checked( ! empty( $settings['enable_graph_diagnostics'] ) ); ?>> Enabled</label></td></tr>
                 <tr><th>Debug mode</th><td><label><input type="checkbox" name="debug_mode" value="1" <?php checked( ! empty( $settings['debug_mode'] ) ); ?>> Enabled</label></td></tr>
                 <tr>
-                    <th><?php esc_html_e( 'Delete data on uninstall', 'schema-control-manager' ); ?></th>
+                    <th><?php esc_html_e( 'Delete data on uninstall', 'schema-control-pro' ); ?></th>
                     <td>
-                        <label><input type="checkbox" name="delete_data_on_uninstall" value="1" <?php checked( ! empty( $settings['delete_data_on_uninstall'] ) ); ?>> <?php esc_html_e( 'Enabled', 'schema-control-manager' ); ?></label>
-                        <p class="description"><?php esc_html_e( 'When checked, all rules, schemas, and settings are permanently deleted when the plugin is uninstalled. Disabled by default to preserve data.', 'schema-control-manager' ); ?></p>
+                        <label><input type="checkbox" name="delete_data_on_uninstall" value="1" <?php checked( ! empty( $settings['delete_data_on_uninstall'] ) ); ?>> <?php esc_html_e( 'Enabled', 'schema-control-pro' ); ?></label>
+                        <p class="description"><?php esc_html_e( 'When checked, all rules, schemas, and settings are permanently deleted when the plugin is uninstalled. Disabled by default to preserve data.', 'schema-control-pro' ); ?></p>
                     </td>
                 </tr>
                 <tr><th><label for="conflict_types_default">Conflict types</label></th><td><input class="large-text" type="text" id="conflict_types_default" name="conflict_types_default" value="<?php echo esc_attr( implode( ', ', (array) ( $settings['conflict_types_default'] ?? array() ) ) ); ?>"><p class="description">Comma separated list used in the rule editor.</p></td></tr>

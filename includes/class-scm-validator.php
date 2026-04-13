@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class SCM_Validator {
     public function validate_json( $json ) {
         if ( '' === trim( (string) $json ) ) {
-            return new WP_Error( 'empty_json', __( 'Schema JSON is empty.', 'schema-control-manager' ) );
+            return new WP_Error( 'empty_json', __( 'Schema JSON is empty.', 'schema-control-pro' ) );
         }
 
         json_decode( $json, true );
@@ -16,7 +16,7 @@ class SCM_Validator {
 
         $decoded = json_decode( $json, true );
         if ( ! is_array( $decoded ) ) {
-            return new WP_Error( 'invalid_structure', __( 'Schema JSON must decode to an object or array.', 'schema-control-manager' ) );
+            return new WP_Error( 'invalid_structure', __( 'Schema JSON must decode to an object or array.', 'schema-control-pro' ) );
         }
 
         return $decoded;
@@ -69,14 +69,14 @@ class SCM_Validator {
             if ( '' === $target_value || false === strpos( $target_value, ':' ) ) {
                 return new WP_Error(
                     'invalid_taxonomy_term',
-                    __( 'taxonomy_term target value must be in the format "taxonomy:term-slug" (e.g. genre:fiction).', 'schema-control-manager' )
+                    __( 'taxonomy_term target value must be in the format "taxonomy:term-slug" (e.g. genre:fiction).', 'schema-control-pro' )
                 );
             }
             $parts = explode( ':', $target_value, 2 );
             if ( '' === $parts[0] || '' === ( $parts[1] ?? '' ) ) {
                 return new WP_Error(
                     'invalid_taxonomy_term',
-                    __( 'taxonomy_term target value must be in the format "taxonomy:term-slug" (e.g. genre:fiction).', 'schema-control-manager' )
+                    __( 'taxonomy_term target value must be in the format "taxonomy:term-slug" (e.g. genre:fiction).', 'schema-control-pro' )
                 );
             }
         }

@@ -33,14 +33,14 @@ class SCM_Import_Export {
     public function download_export_rule( $rule_id ) {
         $rule = $this->rules->get( (int) $rule_id );
         if ( ! $rule ) {
-            wp_die( esc_html__( 'Rule not found.', 'schema-control-manager' ) );
+            wp_die( esc_html__( 'Rule not found.', 'schema-control-pro' ) );
         }
 
         $rule['replaced_types'] = json_decode( $rule['replaced_types'], true ) ?: array();
         $rule['schemas']        = $this->schemas->get_by_rule( (int) $rule_id );
 
         $payload = array(
-            'plugin'      => 'schema-control-manager',
+            'plugin'      => 'schema-control-pro',
             'version'     => SCM_VERSION,
             'exported_at' => current_time( 'mysql' ),
             'rules'       => array( $rule ),
@@ -72,7 +72,7 @@ class SCM_Import_Export {
             $rule['schemas']        = $this->schemas->get_by_rule( $rule['id'] );
         }
         return array(
-            'plugin' => 'schema-control-manager',
+            'plugin' => 'schema-control-pro',
             'version' => SCM_VERSION,
             'exported_at' => current_time( 'mysql' ),
             'rules' => $rules,
@@ -81,7 +81,7 @@ class SCM_Import_Export {
 
     public function import_payload( $payload ) {
         if ( empty( $payload['rules'] ) || ! is_array( $payload['rules'] ) ) {
-            return new WP_Error( 'invalid_import', __( 'Import file is missing rules.', 'schema-control-manager' ) );
+            return new WP_Error( 'invalid_import', __( 'Import file is missing rules.', 'schema-control-pro' ) );
         }
 
         foreach ( $payload['rules'] as $rule ) {

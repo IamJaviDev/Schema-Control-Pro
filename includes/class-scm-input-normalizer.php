@@ -12,7 +12,7 @@ class SCM_Input_Normalizer {
      */
     public function validate_node_type( $node ) {
         if ( ! isset( $node['@type'] ) ) {
-            return __( 'Node is missing the required @type property.', 'schema-control-manager' );
+            return __( 'Node is missing the required @type property.', 'schema-control-pro' );
         }
 
         $type = $node['@type'];
@@ -20,24 +20,24 @@ class SCM_Input_Normalizer {
         if ( is_string( $type ) ) {
             return '' !== trim( $type )
                 ? null
-                : __( 'Node @type is an empty string.', 'schema-control-manager' );
+                : __( 'Node @type is an empty string.', 'schema-control-pro' );
         }
 
         if ( is_array( $type ) ) {
             if ( empty( $type ) ) {
-                return __( 'Node @type is an empty array.', 'schema-control-manager' );
+                return __( 'Node @type is an empty array.', 'schema-control-pro' );
             }
             // A JSON object decoded to a PHP associative array (e.g. {"invalid":"object"})
             // is never a valid @type value. Detect by checking for non-sequential keys.
             if ( array_keys( $type ) !== range( 0, count( $type ) - 1 ) ) {
-                return __( 'Node @type is a JSON object, not a string or array of strings.', 'schema-control-manager' );
+                return __( 'Node @type is a JSON object, not a string or array of strings.', 'schema-control-pro' );
             }
             foreach ( $type as $t ) {
                 if ( ! is_string( $t ) ) {
-                    return __( 'Node @type array contains a non-string or empty value.', 'schema-control-manager' );
+                    return __( 'Node @type array contains a non-string or empty value.', 'schema-control-pro' );
                 }
                 if ( '' === trim( $t ) ) {
-                    return __( 'Node @type array contains a non-string or empty value.', 'schema-control-manager' );
+                    return __( 'Node @type array contains a non-string or empty value.', 'schema-control-pro' );
                 }
             }
             return null;
@@ -45,7 +45,7 @@ class SCM_Input_Normalizer {
 
         return sprintf(
             /* translators: %s: PHP type of the @type value (e.g. "array", "integer") */
-            __( 'Node @type must be a string or array of strings; got %s.', 'schema-control-manager' ),
+            __( 'Node @type must be a string or array of strings; got %s.', 'schema-control-pro' ),
             gettype( $type )
         );
     }
@@ -53,7 +53,7 @@ class SCM_Input_Normalizer {
     public function normalize_schema_json( $json, $strip_empty = false ) {
         $decoded = json_decode( $json, true );
         if ( JSON_ERROR_NONE !== json_last_error() || ! is_array( $decoded ) ) {
-            return new WP_Error( 'invalid_json', __( 'Schema JSON must be a valid JSON object or array.', 'schema-control-manager' ) );
+            return new WP_Error( 'invalid_json', __( 'Schema JSON must be a valid JSON object or array.', 'schema-control-pro' ) );
         }
 
         return $this->normalize_decoded_schema( $decoded, $strip_empty );

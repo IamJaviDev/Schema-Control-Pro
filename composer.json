@@ -1,6 +1,6 @@
 {
-    "name": "scm/schema-control-manager",
-    "description": "Schema Control Manager WordPress plugin",
+    "name": "scm/schema-control-pro",
+    "description": "Schema Control Pro WordPress plugin",
     "type": "wordpress-plugin",
     "require-dev": {
         "phpunit/phpunit": "^10.5"
