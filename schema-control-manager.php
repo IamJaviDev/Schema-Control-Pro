@@ -34,6 +34,7 @@ require_once SCM_PLUGIN_DIR . 'includes/class-scm-structural-classifier.php';
 require_once SCM_PLUGIN_DIR . 'includes/class-scm-id-manager.php';
 require_once SCM_PLUGIN_DIR . 'includes/class-scm-reference-rewriter.php';
 require_once SCM_PLUGIN_DIR . 'includes/class-scm-graph-diagnostics.php';
+require_once SCM_PLUGIN_DIR . 'includes/class-scm-request-context.php';
 require_once SCM_PLUGIN_DIR . 'includes/class-scm-rules.php';
 require_once SCM_PLUGIN_DIR . 'includes/class-scm-schemas.php';
 require_once SCM_PLUGIN_DIR . 'includes/class-scm-graph-manager.php';

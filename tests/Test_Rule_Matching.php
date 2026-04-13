@@ -13,8 +13,11 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Subclass of SCM_Rules with injectable rows and a predictable matcher.
- * get_all() honours the is_active filter exactly as the production query does.
- * matches_current_request() always returns true so every active rule matches.
+ *
+ * - get_all() honours the is_active filter exactly as the production query does.
+ * - build_request_context() returns an empty context so no WP functions are needed.
+ * - matches_context() always returns true so every active rule matches — these
+ *   tests verify priority/filtering logic, not target matching.
  */
 class Stub_SCM_Rules_Matching extends SCM_Rules {
     /** @var array[] */
@@ -39,8 +42,13 @@ class Stub_SCM_Rules_Matching extends SCM_Rules {
         return $rows;
     }
 
-    public function matches_current_request( $rule ): bool {
-        return true; // every rule matches in isolation tests
+    protected function build_request_context(): SCM_Request_Context {
+        // Return an empty context so no WordPress functions are invoked.
+        return SCM_Request_Context::from_array( array() );
+    }
+
+    public function matches_context( $rule, SCM_Request_Context $ctx ): bool {
+        return true; // every rule matches in priority/filter isolation tests
     }
 }
 
@@ -165,5 +173,141 @@ class Test_Rule_Matching extends TestCase {
 
         $this->assertNotNull( $matched );
         $this->assertNotSame( 20, (int) $matched['id'], 'Lower-priority rule id must not be returned.' );
+    }
+
+    // ── matches_context() — new target types ─────────────────────────────────
+
+    /** Helper: real SCM_Rules instance (no DB needed for matches_context). */
+    private function make_rules(): SCM_Rules {
+        return new SCM_Rules( new SCM_DB() );
+    }
+
+    /** Helper: build a minimal rule array for matching tests. */
+    private function make_match_rule( string $type, string $value = '' ): array {
+        return array(
+            'target_type'  => $type,
+            'target_value' => $value,
+        );
+    }
+
+    // ── front_page vs home ────────────────────────────────────────────────────
+
+    public function test_front_page_matches_when_is_front_page(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_front_page' => true ) );
+        $this->assertTrue( $rules->matches_context( $this->make_match_rule( 'front_page' ), $ctx ) );
+    }
+
+    public function test_front_page_does_not_match_blog_index(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_home' => true, 'is_front_page' => false ) );
+        $this->assertFalse( $rules->matches_context( $this->make_match_rule( 'front_page' ), $ctx ) );
+    }
+
+    public function test_home_matches_front_page_for_backward_compat(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_front_page' => true, 'is_home' => false ) );
+        $this->assertTrue( $rules->matches_context( $this->make_match_rule( 'home' ), $ctx ) );
+    }
+
+    public function test_home_matches_blog_index(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_home' => true, 'is_front_page' => false ) );
+        $this->assertTrue( $rules->matches_context( $this->make_match_rule( 'home' ), $ctx ) );
+    }
+
+    // ── post_type ─────────────────────────────────────────────────────────────
+
+    public function test_post_type_matches_singular_of_correct_type(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_singular' => true, 'post_type' => 'post' ) );
+        $this->assertTrue( $rules->matches_context( $this->make_match_rule( 'post_type', 'post' ), $ctx ) );
+    }
+
+    public function test_post_type_does_not_match_different_type(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_singular' => true, 'post_type' => 'page' ) );
+        $this->assertFalse( $rules->matches_context( $this->make_match_rule( 'post_type', 'post' ), $ctx ) );
+    }
+
+    public function test_post_type_does_not_match_non_singular(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_singular' => false, 'post_type' => 'post' ) );
+        $this->assertFalse( $rules->matches_context( $this->make_match_rule( 'post_type', 'post' ), $ctx ) );
+    }
+
+    // ── post_type_archive ─────────────────────────────────────────────────────
+
+    public function test_post_type_archive_matches_correct_type(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_post_type_archive' => true, 'archive_post_type' => 'movie' ) );
+        $this->assertTrue( $rules->matches_context( $this->make_match_rule( 'post_type_archive', 'movie' ), $ctx ) );
+    }
+
+    public function test_post_type_archive_does_not_match_wrong_type(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_post_type_archive' => true, 'archive_post_type' => 'book' ) );
+        $this->assertFalse( $rules->matches_context( $this->make_match_rule( 'post_type_archive', 'movie' ), $ctx ) );
+    }
+
+    // ── category ──────────────────────────────────────────────────────────────
+
+    public function test_category_matches_correct_slug(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_category' => true, 'category_slug' => 'news' ) );
+        $this->assertTrue( $rules->matches_context( $this->make_match_rule( 'category', 'news' ), $ctx ) );
+    }
+
+    public function test_category_does_not_match_wrong_slug(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_category' => true, 'category_slug' => 'sport' ) );
+        $this->assertFalse( $rules->matches_context( $this->make_match_rule( 'category', 'news' ), $ctx ) );
+    }
+
+    // ── tag ───────────────────────────────────────────────────────────────────
+
+    public function test_tag_matches_correct_slug(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_tag' => true, 'tag_slug' => 'php' ) );
+        $this->assertTrue( $rules->matches_context( $this->make_match_rule( 'tag', 'php' ), $ctx ) );
+    }
+
+    public function test_tag_does_not_match_wrong_slug(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_tag' => true, 'tag_slug' => 'javascript' ) );
+        $this->assertFalse( $rules->matches_context( $this->make_match_rule( 'tag', 'php' ), $ctx ) );
+    }
+
+    // ── taxonomy_term ─────────────────────────────────────────────────────────
+
+    public function test_taxonomy_term_matches_correct_taxonomy_and_slug(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_tax' => true, 'taxonomy' => 'genre', 'term_slug' => 'fiction' ) );
+        $this->assertTrue( $rules->matches_context( $this->make_match_rule( 'taxonomy_term', 'genre:fiction' ), $ctx ) );
+    }
+
+    public function test_taxonomy_term_does_not_match_wrong_term(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_tax' => true, 'taxonomy' => 'genre', 'term_slug' => 'sci-fi' ) );
+        $this->assertFalse( $rules->matches_context( $this->make_match_rule( 'taxonomy_term', 'genre:fiction' ), $ctx ) );
+    }
+
+    public function test_taxonomy_term_does_not_match_wrong_taxonomy(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_tax' => true, 'taxonomy' => 'topic', 'term_slug' => 'fiction' ) );
+        $this->assertFalse( $rules->matches_context( $this->make_match_rule( 'taxonomy_term', 'genre:fiction' ), $ctx ) );
+    }
+
+    public function test_taxonomy_term_does_not_match_without_is_tax(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_tax' => false, 'taxonomy' => 'genre', 'term_slug' => 'fiction' ) );
+        $this->assertFalse( $rules->matches_context( $this->make_match_rule( 'taxonomy_term', 'genre:fiction' ), $ctx ) );
+    }
+
+    public function test_taxonomy_term_malformed_value_never_matches(): void {
+        $rules = $this->make_rules();
+        $ctx   = SCM_Request_Context::from_array( array( 'is_tax' => true, 'taxonomy' => 'genre', 'term_slug' => 'fiction' ) );
+        // No colon → malformed, should always return false.
+        $this->assertFalse( $rules->matches_context( $this->make_match_rule( 'taxonomy_term', 'genrefiction' ), $ctx ) );
     }
 }

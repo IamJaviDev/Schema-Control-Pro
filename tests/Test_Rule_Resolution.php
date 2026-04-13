@@ -104,14 +104,41 @@ class Test_Rule_Resolution extends TestCase {
 
     public function test_specificity_map_values(): void {
         $this->assertSame( 0,  SCM_Rules::target_specificity( 'home' ) );
+        $this->assertSame( 5,  SCM_Rules::target_specificity( 'front_page' ) );
+        $this->assertSame( 8,  SCM_Rules::target_specificity( 'category' ) );
+        $this->assertSame( 8,  SCM_Rules::target_specificity( 'tag' ) );
+        $this->assertSame( 10, SCM_Rules::target_specificity( 'post_type' ) );
         $this->assertSame( 10, SCM_Rules::target_specificity( 'author' ) );
+        $this->assertSame( 12, SCM_Rules::target_specificity( 'taxonomy_term' ) );
+        $this->assertSame( 12, SCM_Rules::target_specificity( 'post_type_archive' ) );
         $this->assertSame( 20, SCM_Rules::target_specificity( 'exact_slug' ) );
         $this->assertSame( 30, SCM_Rules::target_specificity( 'exact_url' ) );
     }
 
     public function test_unknown_target_type_specificity_is_zero(): void {
-        $this->assertSame( 0, SCM_Rules::target_specificity( 'post_type' ) );
+        $this->assertSame( 0, SCM_Rules::target_specificity( 'nonexistent_type' ) );
         $this->assertSame( 0, SCM_Rules::target_specificity( '' ) );
+    }
+
+    /** front_page (5) beats home (0) on specificity when priority is equal. */
+    public function test_front_page_beats_home_on_specificity(): void {
+        $home = $this->make_rule( [ 'id' => 1, 'priority' => 100, 'target_type' => 'home' ] );
+        $fp   = $this->make_rule( [ 'id' => 2, 'priority' => 100, 'target_type' => 'front_page' ] );
+
+        $result = $this->sorted( [ $home, $fp ] );
+
+        $this->assertSame( 'front_page', $result[0]['target_type'] );
+        $this->assertSame( 'home',       $result[1]['target_type'] );
+    }
+
+    /** taxonomy_term (12) beats category (8) on specificity when priority is equal. */
+    public function test_taxonomy_term_beats_category_on_specificity(): void {
+        $cat = $this->make_rule( [ 'id' => 1, 'priority' => 100, 'target_type' => 'category' ] );
+        $tax = $this->make_rule( [ 'id' => 2, 'priority' => 100, 'target_type' => 'taxonomy_term' ] );
+
+        $result = $this->sorted( [ $cat, $tax ] );
+
+        $this->assertSame( 'taxonomy_term', $result[0]['target_type'] );
     }
 
     /** Specificity tie-break: updated_at DESC. */

@@ -111,6 +111,7 @@ if ( ! class_exists( 'WP_Error' ) ) {
 
 require_once SCM_PLUGIN_DIR . 'includes/class-scm-db.php';
 require_once SCM_PLUGIN_DIR . 'includes/class-scm-validator.php';
+require_once SCM_PLUGIN_DIR . 'includes/class-scm-request-context.php';
 require_once SCM_PLUGIN_DIR . 'includes/class-scm-rules.php';
 require_once SCM_PLUGIN_DIR . 'includes/class-scm-schemas.php';
 require_once SCM_PLUGIN_DIR . 'includes/class-scm-import-export.php';

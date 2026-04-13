@@ -96,6 +96,7 @@ class SCM_Rules {
     }
 
     public function get_matching_rule_for_request() {
+        $ctx   = $this->build_request_context();
         $rules = $this->get_all( array( 'is_active' => 1 ) );
 
         // Deterministic sort: priority DESC → specificity DESC → updated_at DESC → id DESC.
@@ -125,7 +126,7 @@ class SCM_Rules {
         );
 
         foreach ( $rules as $rule ) {
-            if ( $this->matches_current_request( $rule ) ) {
+            if ( $this->matches_context( $rule, $ctx ) ) {
                 $rule['replaced_types'] = json_decode( $rule['replaced_types'], true ) ?: array();
                 return $rule;
             }
@@ -135,51 +136,107 @@ class SCM_Rules {
     }
 
     /**
+     * Build the request context for the current WP request.
+     * Extracted into a protected method so test stubs can override it without
+     * calling WordPress conditionals.
+     *
+     * @return SCM_Request_Context
+     */
+    protected function build_request_context(): SCM_Request_Context {
+        return SCM_Request_Context::from_wp();
+    }
+
+    /**
      * Numeric specificity score for a target type.
-     * Higher = more specific. Extend the map when post_type / post_id are added.
+     * Higher = more specific. Ordered broad → narrow:
+     *   home(0) < front_page(5) < category/tag(8) < post_type/author(10)
+     *   < taxonomy_term/post_type_archive(12) < exact_slug(20) < exact_url(30)
      *
      * @param string $type
      * @return int
      */
     public static function target_specificity( $type ) {
         $map = array(
-            'home'       => 0,
-            'author'     => 10,
-            // future: 'post_type' => 15,
-            'exact_slug' => 20,
-            'exact_url'  => 30,
-            // future: 'post_id'   => 40,
+            'home'               => 0,
+            'front_page'         => 5,
+            'category'           => 8,
+            'tag'                => 8,
+            'post_type'          => 10,
+            'author'             => 10,
+            'taxonomy_term'      => 12,
+            'post_type_archive'  => 12,
+            'exact_slug'         => 20,
+            'exact_url'          => 30,
         );
         return $map[ $type ] ?? 0;
     }
 
-    public function matches_current_request( $rule ) {
+    /**
+     * Test whether $rule matches the given request context.
+     * All matching logic reads from $ctx; no WordPress conditionals are called here.
+     *
+     * @param array               $rule
+     * @param SCM_Request_Context $ctx
+     * @return bool
+     */
+    public function matches_context( $rule, SCM_Request_Context $ctx ): bool {
         switch ( $rule['target_type'] ) {
+
             case 'home':
-                return is_front_page() || is_home();
+                // Backward compat: matches the static front page OR the blog index.
+                return $ctx->is_front_page || $ctx->is_home;
 
-            case 'exact_url':
-                $current = home_url( add_query_arg( array(), $GLOBALS['wp']->request ?? '' ) );
-                $current = trailingslashit( strtok( $current, '?' ) );
-                $target  = trailingslashit( $rule['target_value'] );
-                return untrailingslashit( $current ) === untrailingslashit( $target );
+            case 'front_page':
+                return $ctx->is_front_page;
 
-            case 'exact_slug':
-                $post = get_queried_object();
-                if ( isset( $post->post_name ) ) {
-                    return $post->post_name === $rule['target_value'];
-                }
-                return trim( $GLOBALS['wp']->request ?? '', '/' ) === trim( $rule['target_value'], '/' );
+            case 'post_type':
+                return $ctx->is_singular && $ctx->post_type === $rule['target_value'];
 
-            case 'author':
-                if ( ! is_author() ) {
+            case 'post_type_archive':
+                return $ctx->is_post_type_archive && $ctx->archive_post_type === $rule['target_value'];
+
+            case 'category':
+                return $ctx->is_category && $ctx->category_slug === $rule['target_value'];
+
+            case 'tag':
+                return $ctx->is_tag && $ctx->tag_slug === $rule['target_value'];
+
+            case 'taxonomy_term':
+                // target_value format: "taxonomy:term-slug"
+                $parts = explode( ':', $rule['target_value'], 2 );
+                if ( 2 !== count( $parts ) || '' === $parts[0] || '' === $parts[1] ) {
                     return false;
                 }
-                $author = get_queried_object();
-                return isset( $author->user_nicename ) && $author->user_nicename === $rule['target_value'];
+                return $ctx->is_tax
+                    && $ctx->taxonomy  === $parts[0]
+                    && $ctx->term_slug === $parts[1];
+
+            case 'exact_url':
+                return untrailingslashit( $ctx->current_url ) === untrailingslashit( $rule['target_value'] );
+
+            case 'exact_slug':
+                if ( '' !== $ctx->queried_slug ) {
+                    return $ctx->queried_slug === $rule['target_value'];
+                }
+                return $ctx->request_path === trim( $rule['target_value'], '/' );
+
+            case 'author':
+                return $ctx->is_author && $ctx->author_nicename === $rule['target_value'];
         }
 
         return false;
+    }
+
+    /**
+     * Check whether $rule matches the live WordPress request.
+     * Builds a fresh context from WP on every call — use get_matching_rule_for_request()
+     * when iterating over many rules so the context is built only once.
+     *
+     * @param array $rule
+     * @return bool
+     */
+    public function matches_current_request( $rule ): bool {
+        return $this->matches_context( $rule, $this->build_request_context() );
     }
     private function normalize_rule_data( $data ) {
         $target_type = sanitize_text_field( $data['target_type'] ?? 'exact_slug' );
@@ -187,7 +244,8 @@ class SCM_Rules {
         $target_value = isset( $data['target_value'] ) ? sanitize_text_field( $data['target_value'] ) : '';
         $replaced_types = array_values( array_filter( array_map( 'sanitize_text_field', (array) ( $data['replaced_types'] ?? array() ) ) ) );
 
-        if ( 'home' === $target_type ) {
+        // These types are page-level flags; a target_value makes no sense.
+        if ( in_array( $target_type, array( 'home', 'front_page' ), true ) ) {
             $target_value = '';
         }
 

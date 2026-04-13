@@ -59,6 +59,18 @@ class SCM_Admin {
             );
 
             $rule_id = isset( $_POST['rule_id'] ) ? (int) $_POST['rule_id'] : 0;
+
+            // ── Rule-level validation (e.g. taxonomy_term format) ─────────────
+            $rule_validation = $this->validator->validate_rule( $rule_data );
+            if ( is_wp_error( $rule_validation ) ) {
+                $back = admin_url( 'admin.php?page=scm_rule_edit' );
+                if ( $rule_id ) {
+                    $back = add_query_arg( 'rule_id', $rule_id, $back );
+                }
+                wp_safe_redirect( add_query_arg( 'rule_error', rawurlencode( $rule_validation->get_error_message() ), $back ) );
+                exit;
+            }
+
             if ( $rule_id ) {
                 $this->rules->update( $rule_id, $rule_data );
             } else {

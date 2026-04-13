@@ -17,6 +17,7 @@
     </p></div>
     <?php endif; ?>
     <?php if ( ! empty( $_GET['schema_deleted'] ) ) : ?><div class="notice notice-success"><p><?php esc_html_e( 'Schema deleted.', 'schema-control-manager' ); ?></p></div><?php endif; ?>
+    <?php if ( ! empty( $_GET['rule_error'] ) ) : ?><div class="notice notice-error"><p><strong><?php esc_html_e( 'Rule could not be saved:', 'schema-control-manager' ); ?></strong> <?php echo esc_html( wp_unslash( $_GET['rule_error'] ) ); ?></p></div><?php endif; ?>
     <?php if ( ! empty( $_GET['schema_error'] ) ) : ?><div class="notice notice-error"><p><?php echo esc_html( wp_unslash( $_GET['schema_error'] ) ); ?></p></div><?php endif; ?>
 
     <?php if ( ! empty( $edit_schema_mismatch ) ) : ?>
@@ -108,10 +109,16 @@
                         <th><label for="target_type"><?php esc_html_e( 'Target type', 'schema-control-manager' ); ?></label></th>
                         <td>
                             <select name="target_type" id="target_type">
-                                <option value="home" <?php selected( $rule['target_type'], 'home' ); ?>>Home</option>
-                                <option value="exact_url" <?php selected( $rule['target_type'], 'exact_url' ); ?>>Exact URL</option>
-                                <option value="exact_slug" <?php selected( $rule['target_type'], 'exact_slug' ); ?>>Exact slug</option>
-                                <option value="author" <?php selected( $rule['target_type'], 'author' ); ?>>Author page</option>
+                                <option value="home" <?php selected( $rule['target_type'], 'home' ); ?>><?php esc_html_e( 'Home (front page or blog index)', 'schema-control-manager' ); ?></option>
+                                <option value="front_page" <?php selected( $rule['target_type'], 'front_page' ); ?>><?php esc_html_e( 'Front page (static only)', 'schema-control-manager' ); ?></option>
+                                <option value="exact_url" <?php selected( $rule['target_type'], 'exact_url' ); ?>><?php esc_html_e( 'Exact URL', 'schema-control-manager' ); ?></option>
+                                <option value="exact_slug" <?php selected( $rule['target_type'], 'exact_slug' ); ?>><?php esc_html_e( 'Exact slug', 'schema-control-manager' ); ?></option>
+                                <option value="post_type" <?php selected( $rule['target_type'], 'post_type' ); ?>><?php esc_html_e( 'Post type (all singulars)', 'schema-control-manager' ); ?></option>
+                                <option value="post_type_archive" <?php selected( $rule['target_type'], 'post_type_archive' ); ?>><?php esc_html_e( 'Post type archive', 'schema-control-manager' ); ?></option>
+                                <option value="category" <?php selected( $rule['target_type'], 'category' ); ?>><?php esc_html_e( 'Category archive', 'schema-control-manager' ); ?></option>
+                                <option value="tag" <?php selected( $rule['target_type'], 'tag' ); ?>><?php esc_html_e( 'Tag archive', 'schema-control-manager' ); ?></option>
+                                <option value="taxonomy_term" <?php selected( $rule['target_type'], 'taxonomy_term' ); ?>><?php esc_html_e( 'Taxonomy term archive', 'schema-control-manager' ); ?></option>
+                                <option value="author" <?php selected( $rule['target_type'], 'author' ); ?>><?php esc_html_e( 'Author page', 'schema-control-manager' ); ?></option>
                             </select>
                         </td>
                     </tr>
@@ -119,7 +126,12 @@
                         <th><label for="target_value"><?php esc_html_e( 'Target value', 'schema-control-manager' ); ?></label></th>
                         <td>
                             <input class="regular-text" type="text" name="target_value" id="target_value" value="<?php echo esc_attr( $rule['target_value'] ); ?>">
-                            <p class="description" id="scm-target-help"><?php esc_html_e( 'Home does not need a target value. For author pages, use the user_nicename.', 'schema-control-manager' ); ?></p>
+                            <p class="description" id="scm-target-help">
+                                <?php esc_html_e( 'Home and Front page do not need a value.', 'schema-control-manager' ); ?>
+                                <?php esc_html_e( 'For post_type / post_type_archive / category / tag: enter the slug (e.g. post, movies, news).', 'schema-control-manager' ); ?>
+                                <?php esc_html_e( 'For taxonomy_term: use taxonomy:term-slug (e.g. genre:fiction).', 'schema-control-manager' ); ?>
+                                <?php esc_html_e( 'For author pages: use the user_nicename.', 'schema-control-manager' ); ?>
+                            </p>
                         </td>
                     </tr>
                     <tr>

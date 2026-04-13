@@ -50,6 +50,40 @@ class SCM_Validator {
         return wp_json_encode( $data, $flags );
     }
 
+    /**
+     * Validate rule-level fields.
+     *
+     * Currently enforces:
+     *   - taxonomy_term target_value must be "taxonomy:term-slug" (both parts non-empty).
+     *
+     * Returns true on success, or a WP_Error on the first validation failure.
+     *
+     * @param array $data  Must contain 'target_type' and 'target_value' keys.
+     * @return true|WP_Error
+     */
+    public function validate_rule( $data ) {
+        $target_type  = isset( $data['target_type'] )  ? (string) $data['target_type']  : '';
+        $target_value = isset( $data['target_value'] ) ? (string) $data['target_value'] : '';
+
+        if ( 'taxonomy_term' === $target_type ) {
+            if ( '' === $target_value || false === strpos( $target_value, ':' ) ) {
+                return new WP_Error(
+                    'invalid_taxonomy_term',
+                    __( 'taxonomy_term target value must be in the format "taxonomy:term-slug" (e.g. genre:fiction).', 'schema-control-manager' )
+                );
+            }
+            $parts = explode( ':', $target_value, 2 );
+            if ( '' === $parts[0] || '' === ( $parts[1] ?? '' ) ) {
+                return new WP_Error(
+                    'invalid_taxonomy_term',
+                    __( 'taxonomy_term target value must be in the format "taxonomy:term-slug" (e.g. genre:fiction).', 'schema-control-manager' )
+                );
+            }
+        }
+
+        return true;
+    }
+
     public function strip_empty_values( $data ) {
         if ( is_array( $data ) ) {
             foreach ( $data as $key => $value ) {
